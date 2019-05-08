@@ -1,6 +1,7 @@
 #include "biocommon/align_common/align_result.h"
 #include "common/string/stringtools.h"
 #include <cassert>
+#include <sstream>
 
 namespace BGIQD {
     namespace ALIGN_COMMON {
@@ -251,6 +252,31 @@ namespace BGIQD {
                 }
             }
             return ret;
+        }
+
+        std::string MatchInfos2CIGAR(const std::vector<MatchInfo> & infos)
+        {
+            std::ostringstream ost ;
+            for(const auto & c : infos )
+            {
+                if( c.len <= 0 )
+                    continue ;
+                ost<<c.len;
+                switch(c.type)
+                {
+                    case CIGAR::D: ost<<'D'; break ;
+                    case CIGAR::EQUAL: ost<<'X'; break ;
+                    case CIGAR::H: ost<<'H'; break ;
+                    case CIGAR::I: ost<<'I'; break ;
+                    case CIGAR::M: ost<<'M'; break ;
+                    case CIGAR::N: ost<<'N'; break ;
+                    case CIGAR::P: ost<<'P'; break ;
+                    case CIGAR::S: ost<<'S'; break ;
+                    case CIGAR::X: ost<<'X'; break ;
+                    case CIGAR::NONE: assert(0); break ;
+                }
+            }
+            return ost.str() ;
         }
     }
 }

@@ -67,6 +67,7 @@ namespace BGIQD {
             bool InitFromStr(const std::string & line );
         } ;
 
+        std::string MatchInfos2CIGAR(const std::vector<MatchInfo> & infos);
     }
 }
 

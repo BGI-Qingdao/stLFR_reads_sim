@@ -17,22 +17,32 @@ namespace BGIQD {
                           , curr_size(1024)
                           , curr_top(1024)
                     {
-                        unit_size = sizeof(Unit);
                         data = static_cast<Unit*>( malloc( curr_size * unit_size ) );
                         assert(data);
                     }
 
-                    Unit * Next() 
+                    Unit * Push() 
                     {
                         if( curr_top < curr_size )
-                            return data[curr_top++];
+                            return &(data[curr_top++]);
                         curr_size *= 2 ;
                         data =static_cast<Unit*>( realloc(data,curr_size * unit_size) );
                         assert(data);
                         assert(curr_top < curr_size );
-                        return data[curr_top++];
+                        return &(data[curr_top++]);
                     }
-
+                    Unit * Top() const
+                    {
+                        assert(curr_top > 0);
+                        assert(curr_top <= curr_size );
+                        return &(data[curr_top-1]);
+                    }
+                    void Pop()
+                    {
+                        assert(curr_top > 0);
+                        curr_top -- ;
+                    }
+                    int Size() const { return curr_top ; }
                     void Clear()
                     {
                         curr_top = 0 ;

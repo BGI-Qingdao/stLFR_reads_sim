@@ -13,7 +13,6 @@ namespace BGIQD {
             std::string Seq(int weight = -1 ) const ;
 
             std::string ReverseCompleteSeq( int weight = -1 ) const ;
-
             void ToUpper() ;
 
             void ToLower() ;

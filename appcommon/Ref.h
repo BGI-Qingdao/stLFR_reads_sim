@@ -12,12 +12,20 @@
 namespace BGIQD {
     namespace stLFRSim {
 
-        typedef BGIQD::FASTA::NormalHead RefHead;
+#define REF_TMP_BIG 1000000000000L 
+
+        typedef BGIQD::FASTA::Id_Desc_Head RefHead;
 
         typedef BGIQD::FASTA::Fasta<RefHead> RefFa;
 
         struct RefChromesome
         {
+            RefChromesome(const RefFa & f)
+                :length(0) 
+                , fa(f)
+            {}
+            RefChromesome() {}
+
             int length ;
             RefFa fa ;
             //      [n_start , n_end ] by 0base 
@@ -62,11 +70,11 @@ namespace BGIQD {
                             std::make_tuple( n_before, i)) ;
                 }
             }
-            bool IsValidArea( int start , int length )
+            bool IsValidArea( int start , int length ) const
             {
                 auto itr = std::lower_bound( n_area.begin() 
                         , n_area.end() 
-                        , std::make_tuple( start +length -1, 100000000L) );
+                        , std::make_tuple( start +length -1, REF_TMP_BIG ) );
                 if( itr != n_area.end() )
                 {
                     int tmp_start ; int tmp_end ;
@@ -80,11 +88,13 @@ namespace BGIQD {
 
         struct Ref
         {
+            long length ;
             std::vector<RefChromesome> refs;
             //      [n_start , n_end ] by 0base 
             std::vector<std::tuple<long , long>>  chromesome_area ;
-            void InitAreas()
+            void Init()
             {
+                length = 0 ;
                 long curr_pos = 0 ;
                 for( auto & ref : refs )
                 {
@@ -93,13 +103,34 @@ namespace BGIQD {
                             std::make_tuple(curr_pos ,curr_pos + ref.length -1)) ;
                     curr_pos += ref.length ;
                 }
+                length = curr_pos;
             }
+
+            const RefChromesome & GetChromesome( long start , long & chromesome_start ) const
+            {
+                chromesome_start = 0 ;
+                auto itr = std::lower_bound( 
+                        chromesome_area.begin() 
+                        ,chromesome_area.end()
+                        ,std::make_tuple(start,REF_TMP_BIG ) );
+                if ( itr == chromesome_area.end() )
+                {
+                    assert(0);
+                }
+                long tmp_start ; long tmp_end ;
+                std::tie( tmp_start , tmp_end ) 
+                    = *itr ;
+                chromesome_start = tmp_start ;
+                int index = itr - chromesome_area.begin() ;
+                return refs.at(index);
+            }
+
             bool IsValidArea( long start , int length ) const
             {
                 auto itr = std::lower_bound( 
                         chromesome_area.begin() 
                         ,chromesome_area.end()
-                        ,std::make_tuple(start,100000000L) );
+                        ,std::make_tuple(start,REF_TMP_BIG ) );
                 if ( itr == chromesome_area.end() )
                     return false ;
                 long tmp_start ; long tmp_end ;
