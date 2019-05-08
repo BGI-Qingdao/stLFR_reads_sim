@@ -1,40 +1,67 @@
 #include "common/args/argsparser.h"
+#include "common/files/file_reader.h"
+#include "common/files/file_writer.h"
+#include "common/error/Error.h"
 
 #include "appcommon/TagedSubSeq.h"
 #include "appcommon/Pool.h"
+#include "appcommon/Random.h"
+#include "appcommon/Ref.h"
 
 #include <string>
-
+#include <sstream>
 struct AppConfig
 {
 
-    void ParseDistribution()
+    BGIQD::Random::DiscreteRandomWithBin LoadDistributionFromFile( const std::string & file )
     {
+        BGIQD::Random::DiscreteRandomWithBin ret ;
+        auto fin = BGIQD::FILES::FileReaderFactory::GenerateReaderFromFileName(file);
+        if( fin == NULL )
+            FATAL(" open distribution file to read failed !!! ");
+        auto each_line = [&ret] ( const std::string & line )
+        {
+            std::istringstream ist(line);
+            int s ; int b ; int w ;
+            ist >> s>>b>>w;
+            ret.keybin.push_back( { s ,b , w } );
+            return ret ;
+        };
 
+        BGIQD::FILES::FileReaderFactory::EachLine(*fin,each_line);
+
+        return ret ;
     }
 
+    std::string lr_length_file;
+    BGIQD::Random::DiscreteRandomWithBin lr_length_dis;
+    std::string pe_num_file;
+    BGIQD::Random::DiscreteRandomWithBin pe_num_dis;
+    std::string pe_length_file;
+    BGIQD::Random::DiscreteRandomWithBin pe_length_dis;
+
+    void ParseDistribution()
+    {
+        lr_length_dis = LoadDistributionFromFile(lr_length_file);
+        pe_length_dis = LoadDistributionFromFile(pe_length_file);
+        pe_num_dis    = LoadDistributionFromFile(pe_num_file);
+    }
+
+    
     void LoadReference()
     {
 
     }
 
-    int ReadNum() const 
+
+    int RandomLRLengthByDistribution()
     {
-
-    }
-
-    long RandomLRStart() const 
-    {
-
-    }
-    int RandomLRLengthByDistribution() const 
-    {
-
+        return lr_length_dis();
     }
 
     bool ValidLR(long start , int length ) const 
     {
-
+        
     }
 
     BGIQD::stLFRSim::LongRead  GetLR(long start , int length ) const 
@@ -42,19 +69,15 @@ struct AppConfig
 
     }
 
-    int RandomPENumByDistribution() const 
+    int RandomPENumByDistribution() 
     {
-
+        return pe_num_dis();
     }
     bool ValidPENum( int pe_num , int lr_length ) const 
     {
 
     }
 
-    int RandomPEStart( int lr_length ) const 
-    {
-
-    }
 
     int RandomPELengthByDistribution() const 
     {
@@ -72,6 +95,17 @@ struct AppConfig
 
     }
 
+    long RefLen() const 
+    {
+        return 1 ;
+    }
+    void PrintReadsFromBuff() 
+    {
+
+    }
+    void ClearBuff() 
+    {
+    }
     typedef BGIQD::stLFRSim::Pool<BGIQD::stLFRSim::InsertFragment> ReadPairPool;
     void  AddInsertFragment2Buff( 
             BGIQD::stLFRSim::LongRead & lr , int start , int len ) 
@@ -103,14 +137,16 @@ int main(int argc , char ** argv  )
     DEFINE_ARG_OPTIONAL(float , max_slr_cov, "max single long read cov" , "0.5" );
     END_PARSE_ARGS ;
 
-    config.Init();
     config.ParseDistribution();
     config.LoadReference();
 
+    config.Init();
+
     long R = 0 ;
-    while( R < config.ReadNum() )
+    while( R <  readpair_num.to_long() )
     {
-        long lr_start  = config.RandomLRStart() ;
+        long lr_start  =  BGIQD::Random::
+            RandomStartPosByLength(config.RefLen());
         int  lr_length = config.RandomLRLengthByDistribution() ;
         if( ! config.ValidLR( lr_start , lr_length ) )
             continue ;
@@ -122,7 +158,8 @@ int main(int argc , char ** argv  )
         int j = 0 ; int k = 0 ;
         while( j < pe_num || j+k < 2*pe_num )
         {
-            int pe_start = config.RandomPEStart(lr_length);
+            int pe_start = BGIQD::Random::
+                RandomStartPosByLength(lr_length);
             int pe_length = config.RandomPELengthByDistribution() ;
             if ( ! config.ValidInsertFragment( lr, pe_start, pe_length ) )
             {
