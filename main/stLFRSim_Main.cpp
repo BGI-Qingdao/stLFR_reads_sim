@@ -88,14 +88,14 @@ struct AppConfig
         return lr_length_dis();
     }
 
-    bool ValidLR(long start , int length ) const 
+    bool ValidLR(long long start , int length ) const 
     {
         return the_ref.IsValidArea(start, length );
     }
 
-    BGIQD::stLFRSim::LongRead  GetLR(long start , int length ) const 
+    BGIQD::stLFRSim::LongRead  GetLR(long long start , int length ) const 
     {
-        long chromesome_start ;
+        long long chromesome_start ;
         const auto & chromesome = the_ref.GetChromesome(start, chromesome_start );
         return BGIQD::stLFRSim::LongRead(chromesome ,start-chromesome_start , length );
     }
@@ -136,7 +136,7 @@ struct AppConfig
             FATAL("failed to open o_prefix.2.fq.gz to write !!!");
     }
 
-    long RefLen() const 
+    long long RefLen() const 
     {
         return the_ref.length ;
     }
@@ -193,7 +193,7 @@ int main(int argc , char ** argv  )
             , "distribution file of number of read-pair in 1 long read" );
     DEFINE_ARG_REQUIRED(std::string , if_lenth_distribution 
             , "distribution file of insert fragment length" );
-    DEFINE_ARG_REQUIRED(long , readpair_num
+    DEFINE_ARG_REQUIRED(long long, readpair_num
             , "total number of final generated read-pairs" );
 
     DEFINE_ARG_OPTIONAL(float , mutation_rate, "mutation rate" , "0.005" );
@@ -236,13 +236,13 @@ int main(int argc , char ** argv  )
     //
     ////////////////////////////////////////////////////////
 
-    long succ = 0;
-    long fail = 0;
-    long R = 0 ;
+    long long succ = 0;
+    long long fail = 0;
+    long long  R = 0 ;
     while( R <  readpair_num.to_long() )
     {
         // STEP 4.1 . Genarating a long read 
-        long lr_start  =  BGIQD::Random::
+        long long lr_start  =  BGIQD::Random::
             RandomStartPosByLength(config.RefLen());
         int  lr_length = config.RandomLRLengthByDistribution() ;
         if( ! config.ValidLR( lr_start , lr_length ) )

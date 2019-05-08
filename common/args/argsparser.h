@@ -164,7 +164,7 @@ namespace BGIQD{
 
             int to_int() const { assert( t == is_int) ; return d.i ; }
 
-            long to_long() const { assert(t == is_long) ;return d.l ; }
+            long long to_long() const { assert(t == is_long) ;return d.l ; }
 
             float to_float() const { assert( t== is_float) ; return d.f ; }
 
@@ -197,9 +197,14 @@ namespace BGIQD{
             };
 
         template<>
-            struct args_traits<long>
+            struct args_traits<long >
             {
-                args_union::type type() { return args_union::type::is_int ; }
+                args_union::type type() { return args_union::type::is_int; }
+            };
+        template<>
+            struct args_traits<long long>
+            {
+                args_union::type type() { return args_union::type::is_long ; }
             };
 
 

@@ -88,14 +88,14 @@ namespace BGIQD {
 
         struct Ref
         {
-            long length ;
+            long long length ;
             std::vector<RefChromesome> refs;
             //      [n_start , n_end ] by 0base 
-            std::vector<std::tuple<long , long>>  chromesome_area ;
+            std::vector<std::tuple<long long, long long>>  chromesome_area ;
             void Init()
             {
                 length = 0 ;
-                long curr_pos = 0 ;
+                long long curr_pos = 0 ;
                 for( auto & ref : refs )
                 {
                     ref.Init() ;
@@ -106,7 +106,7 @@ namespace BGIQD {
                 length = curr_pos;
             }
 
-            const RefChromesome & GetChromesome( long start , long & chromesome_start ) const
+            const RefChromesome & GetChromesome(long long start , long long& chromesome_start ) const
             {
                 chromesome_start = 0 ;
                 auto itr = std::lower_bound( 
@@ -117,7 +117,7 @@ namespace BGIQD {
                 {
                     assert(0);
                 }
-                long tmp_start ; long tmp_end ;
+                long long tmp_start ; long long tmp_end ;
                 std::tie( tmp_start , tmp_end ) 
                     = *itr ;
                 chromesome_start = tmp_start ;
@@ -125,7 +125,7 @@ namespace BGIQD {
                 return refs.at(index);
             }
 
-            bool IsValidArea( long start , int length ) const
+            bool IsValidArea(long long start , int length ) const
             {
                 auto itr = std::lower_bound( 
                         chromesome_area.begin() 
@@ -133,7 +133,7 @@ namespace BGIQD {
                         ,std::make_tuple(start,REF_TMP_BIG ) );
                 if ( itr == chromesome_area.end() )
                     return false ;
-                long tmp_start ; long tmp_end ;
+                long long tmp_start ; long long tmp_end ;
                 std::tie( tmp_start , tmp_end ) 
                     = *itr ;
                 if( start + length -1 > tmp_end )

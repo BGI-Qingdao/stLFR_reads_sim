@@ -12,9 +12,9 @@ namespace BGIQD {
             {
                 typedef T BaseType;
                 const BaseType & ref ;
-                const int start_pos ;
+                const long long start_pos ;
                 const int length ;
-                SubItem( const BaseType & r , int s , int l )
+                SubItem( const BaseType & r , long long s , int l )
                     : ref(r) 
                       , start_pos(s)
                       , length(l)

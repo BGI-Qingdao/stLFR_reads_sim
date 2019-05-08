@@ -67,10 +67,10 @@ namespace BGIQD {
                 (hits.begin() ,hits.end())(generator) ;
         }
 
-        int RandomStartPosByLength(int len )
+        long long RandomStartPosByLength(long  long len )
         {
             std::default_random_engine generator;
-            std::uniform_int_distribution<int> distribution(0,len-1);
+            std::uniform_int_distribution<long long > distribution(0,len-1);
             return distribution(generator);
         }
 
