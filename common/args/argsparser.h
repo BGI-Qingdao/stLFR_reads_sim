@@ -236,9 +236,17 @@ namespace BGIQD{
 
 #define __PRINT_USAGE \
     std::cerr<<"Usage : "<<argv[0]<< " args "<<std::endl;\
+    int tmp_arg_max_width=0;\
     for( const auto &i : BGIQD::ARGS::infos )\
 {\
-    std::cerr<<"\t\t"<<"--"<<i.second->name;\
+    if( i.second->name.size() > tmp_arg_max_width ) tmp_arg_max_width = i.second->name.size() ;\
+}\
+    for( const auto &i : BGIQD::ARGS::infos )\
+{\
+    std::cerr<<"\t\t"<<"--";\
+    std::cerr.width(tmp_arg_max_width);\
+    std::cerr.setf(std::ios::left);\
+    std::cerr<<i.second->name;\
     if( i.second->optional){\
         std::cerr<<"\t"<<"[optional]";}\
     else{std::cerr<<"\t"<<"[required]";}\
