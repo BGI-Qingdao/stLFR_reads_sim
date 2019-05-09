@@ -294,25 +294,31 @@ int main(int argc , char ** argv  )
             buffer.Clear();
         }
     };
-    std::vector<std::thread> threads ;
+    // start multi-threads.
+    std::vector<std::thread*> threads ;
     for( int i = 0 ; i < thread.to_int() ; i ++ )
     {
-        threads.emplace_back(std::thread(generate));
+        threads.push_back(new std::thread(generate));
     }
+    // wait until all jobs is done ...
     bool unfinish = true;
-
     while(!unfinish)
     {
         unfinish = false ;
         for( int i = 0 ; i < thread.to_int() ; i++ )
         {
-            if( threads[i].joinable() ) 
+            if( threads[i]->joinable() ) 
             {
-                threads[i].join() ;
+                threads[i]->join() ;
                 unfinish = true ;
                 break;
             }
         }
+    }
+    // clean multi-threads .
+    for( int i = 0 ; i < thread.to_int() ; i ++ )
+    {
+        delete threads[i];
     }
     std::cerr<<" Total succ long read : "<<succ<<'\n';
     std::cerr<<" Total fail long read : "<<fail<<'\n';
