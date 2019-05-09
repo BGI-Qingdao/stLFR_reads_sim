@@ -1,7 +1,7 @@
 #!/bin/bash
 
 apps="\
- stLFRSim_Main\
+ stLFRSim\
 "
 
 jobs_o=" "
