@@ -124,16 +124,16 @@ struct AppConfig
 
     void Init()
     {
-        r1_fq = o_prefix+"1.fq.gz";
-        r2_fq = o_prefix+"2.fq.gz";
+        r1_fq = o_prefix+"1.fq";
+        r2_fq = o_prefix+"2.fq";
         or1 = BGIQD::FILES::FileWriterFactory
             ::GenerateWriterFromFileName(r1_fq);
         or2 = BGIQD::FILES::FileWriterFactory
             ::GenerateWriterFromFileName(r2_fq);
         if( NULL ==  or1 )
-            FATAL("failed to open o_prefix.1.fq.gz to write !!!");
+            FATAL("failed to open o_prefix.1.fq to write !!!");
         if( NULL == or2 )
-            FATAL("failed to open o_prefix.2.fq.gz to write !!!");
+            FATAL("failed to open o_prefix.2.fq to write !!!");
     }
 
     long long RefLen() const 
@@ -188,7 +188,7 @@ int main(int argc , char ** argv  )
     DEFINE_ARG_REQUIRED(std::string , ref
             , "reference fasta file" );
     DEFINE_ARG_REQUIRED(std::string , o_prefix
-            , "output file prefix . print into o_prefix.1.fa.fq && o_prefix.2.fa.fq" );
+            , "output file prefix . print into o_prefix.1.fq && o_prefix.2.fq" );
         DEFINE_ARG_REQUIRED(std::string , lr_length_distribution 
                 , "distribution file of long read length" );
     DEFINE_ARG_REQUIRED(std::string , pe_num_distribution 
