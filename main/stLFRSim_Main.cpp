@@ -158,9 +158,9 @@ struct AppConfig
             FormatPrint(*or1,read_id,barcode_id,1,*IF,r1);
             FormatPrint(*or2,read_id,barcode_id,2,*IF,r2);
             buffer.Pop() ;
+            read_id++ ;
         }
         barcode_id ++ ;
-        read_id++ ;
     }
 
     void ClearBuff() 
