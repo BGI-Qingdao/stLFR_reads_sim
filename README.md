@@ -25,7 +25,7 @@ It is a three columns format and each column refers to :
 * areaLength
 * areaWeight
 
-The random engine will first choose a areaBegin by areaWeight, then it random choose a final result from areaBegin to areaBegin+areaLength -1 .
+The random engine will first choose an areaBegin by areaWeight, then it random choose a final result from areaBegin to areaBegin+areaLength -1 .
 
 
 Here is an example of distribution file
@@ -78,22 +78,36 @@ stLFRSim_Main --ref chr19.fa --o_prefix testsim --lr_length_distribution lr_leng
 
 To simplify the explanation , I need to define some symbol first :
 
-*Ri* : a pair of "read1 and read2" ., index by i .
+*Ri* : a pair of "read1 and read2" , index by i .
+
 *IFi* : the insert fragment that generate *Ri* .
+
 *LFi* : the long sequence framgment that generate *IFi* .
+
 *RSi* : the reference sequence that generate *IFi* .
+
 
 The first line of the fastq format contain below information :
 
+
 Column 1 : @read_name#barcode_name/[1 or 2 ] .
+
 Column 2 : barcode_num .
+
 Column 3 : the sequence name of *RSi* .
+
 Column 4 : the sequence length of *RSi* .
+
 Column 5 : the start postion of *LFi* in *RSi* , index start from 0 .
+
 Column 6 : the length of *LFi* in *RSi* 
+
 Column 7 : the start postion of *IFi* in *LFi* , index start from 0 .
+
 Column 8 : the length of *IFi* in *LFi*  .
+
 Column 9 : the CIGAR string about how read mutation .
+
 
 - read1 example 
 
