@@ -61,7 +61,7 @@ And the corresponding distribution looks like :
                 --mutation_rate                 [optional]      [ float arg ]   mutation rate    [ default= 0.005 ]
                 --insert_percent                [optional]      [ float arg ]   insert percent   [ default= 0.005 ]
                 --delete_percent                [optional]      [ float arg ]   delete percent   [ default= 0.005 ]
-                --substitute_percent            [optional]      [ float arg ]   substitute percent   [ default= 0.995 ]
+                --substitute_percent            [optional]      [ float arg ]   substitute percent   [ default= 0.99 ]
                 --max_slr_cov                   [optional]      [ float arg ]   max single long read cov      [ default= 0.5 ]
                 --read_len                      [optional]      [ int arg ]     read length      [ default= 100 ]
 ```
