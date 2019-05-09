@@ -201,7 +201,7 @@ int main(int argc , char ** argv  )
     DEFINE_ARG_OPTIONAL(float , mutation_rate, "mutation rate" , "0.005" );
     DEFINE_ARG_OPTIONAL(float , insert_percent, "insert percent" , "0.005" );
     DEFINE_ARG_OPTIONAL(float , delete_percent, "delete percent " , "0.005" );
-    DEFINE_ARG_OPTIONAL(float , substitute_percent, "substitute percent " , "0.995" );
+    DEFINE_ARG_OPTIONAL(float , substitute_percent, "substitute percent " , "0.99" );
     DEFINE_ARG_OPTIONAL(float , max_slr_cov, "max single long read cov" , "0.5" );
     DEFINE_ARG_OPTIONAL(int   , read_len ,     "read length" , "100" );
     END_PARSE_ARGS ;
