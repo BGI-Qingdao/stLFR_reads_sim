@@ -45,6 +45,7 @@ namespace BGIQD {
                         std::swap( curr_top , other.curr_top );
                         std::swap( curr_size , other.curr_size);
                     }
+                    bool Valid() const { return unit_size > 0 ;}
                     Unit * Top() const
                     {
                         assert(curr_top > 0);

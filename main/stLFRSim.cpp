@@ -210,6 +210,10 @@ struct AppConfig
     {
         std::lock_guard<std::mutex> l(the_mutex);
         ReadPairPool * buffer_2_save = bufferbuffer.Push();
+        if( buffer_2_save->Valid() )
+        {
+            new (buffer_2_save) ReadPairPool;
+        }
         buffer_2_save->Swap(buffer);
     }
     std::thread * writer ;
