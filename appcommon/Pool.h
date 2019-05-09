@@ -3,6 +3,7 @@
 
 #include <malloc.h>
 #include <algorithm>
+#include <cstring>
 namespace BGIQD {
     namespace stLFRSim {
 
