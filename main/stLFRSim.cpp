@@ -40,6 +40,7 @@ struct AppConfig
     std::ostream * or1;
     std::ostream * or2;
 
+    BGIQD::Random::MutationEngine the_mut;
 
     BGIQD::Random::DiscreteRandomWithBin LoadDistributionFromFile( const std::string & file )
     {
@@ -138,6 +139,7 @@ struct AppConfig
             FATAL("failed to open o_prefix.1.fq.gz to write !!!");
         if( NULL == or2 )
             FATAL("failed to open o_prefix.2.fq.gz to write !!!");
+        finish = false ;
     }
 
     long long RefLen() const 
@@ -145,13 +147,48 @@ struct AppConfig
         return the_ref.length ;
     }
 
-    BGIQD::Random::MutationEngine the_mut;
+    std::mutex the_mutex;
 
+    BGIQD::stLFRSim::Pool<ReadPairPool> bufferbuffer;
+    bool finish ;
+
+    void PrintBufferBuffer()
+    {
+        ReadPairPool m_buffer ;
+        while(!finish || bufferbuffer.Size() > 0 )
+        {
+            {
+                std::lock_guard<std::mutex> l(the_mutex);
+                if( bufferbuffer.Size() == 0)
+                {
+                    std::this_thread::sleep_for
+                        (std::chrono::microseconds(1));
+                    continue ;
+                }
+            }
+            assert( bufferbuffer.Size() > 0);
+            {
+                std::lock_guard<std::mutex> l(the_mutex);
+                m_buffer.Swap(*bufferbuffer.Top());
+                bufferbuffer.Pop();
+            }
+            PrintReadsFromBuff(m_buffer);
+        }
+    }
+
+    void CleanBufferBuffer()
+    {
+        std::lock_guard<std::mutex> l(the_mutex);
+        while( bufferbuffer.Size() > 0)
+        {
+            ReadPairPool * buffer = bufferbuffer.Top();
+            delete buffer ;
+            bufferbuffer.Pop();
+        }
+    }
 
     void PrintReadsFromBuff(ReadPairPool & buffer)
     {
-        static std::mutex the_mutex;
-        std::lock_guard<std::mutex> l(the_mutex);
         static int barcode_id = 1 ;
         static long long read_id = 1; 
         while( buffer.Size() > 0)
@@ -169,15 +206,26 @@ struct AppConfig
         barcode_id ++ ;
     }
 
-    void ClearBuff() 
+    void PushWriteRequest( ReadPairPool & buffer)
     {
+        std::lock_guard<std::mutex> l(the_mutex);
+        ReadPairPool * buffer_2_save = bufferbuffer.Push();
+        buffer_2_save->Swap(buffer);
+    }
+    std::thread * writer ;
+    void StartWriteThread() 
+    {
+        writer = new std::thread([this](){
+                PrintBufferBuffer();
+                });
     }
 
-    void  AddInsertFragment2Buff( 
-            BGIQD::stLFRSim::LongRead & lr , int start , int len ) 
+    void WaitWriteThread()
     {
+        finish = true ;
+        writer->join();
+        delete writer ;
     }
-
 }config;
 
 int main(int argc , char ** argv  )
@@ -286,7 +334,7 @@ int main(int argc , char ** argv  )
             if( j >= pe_num ) // succ
             {
                 R += j ;
-                config.PrintReadsFromBuff(buffer) ;
+                config.PushWriteRequest(buffer) ;
                 succ ++ ;
             }
             else
@@ -295,6 +343,7 @@ int main(int argc , char ** argv  )
         }
     };
     // start multi-threads.
+    config.StartWriteThread();
     std::vector<std::thread*> threads ;
     for( int i = 0 ; i < thread.to_int() ; i ++ )
     {
@@ -302,7 +351,7 @@ int main(int argc , char ** argv  )
     }
     // wait until all jobs is done ...
     bool unfinish = true;
-    while(!unfinish)
+    while(unfinish)
     {
         unfinish = false ;
         for( int i = 0 ; i < thread.to_int() ; i++ )
@@ -320,6 +369,7 @@ int main(int argc , char ** argv  )
     {
         delete threads[i];
     }
+    config.WaitWriteThread();
     std::cerr<<" Total succ long read : "<<succ<<'\n';
     std::cerr<<" Total fail long read : "<<fail<<'\n';
     std::cerr<<" Total read pair num  : "<<R<<'\n';

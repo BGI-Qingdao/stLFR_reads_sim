@@ -2,7 +2,7 @@
 #define __APPCOMMON_POOL_H__
 
 #include <malloc.h>
-
+#include <algorithm>
 namespace BGIQD {
     namespace stLFRSim {
 
@@ -11,6 +11,7 @@ namespace BGIQD {
             {
                 public:
                     typedef U Unit;
+
                     Pool() 
                         : unit_size(sizeof(Unit)) 
                           , data(NULL) 
@@ -21,6 +22,10 @@ namespace BGIQD {
                         assert(data);
                     }
 
+                    ~Pool()
+                    {
+                        free(data);
+                    }
                     Unit * Push() 
                     {
                         if( curr_top < curr_size )
@@ -30,6 +35,15 @@ namespace BGIQD {
                         assert(data);
                         assert(curr_top < curr_size );
                         return &(data[curr_top++]);
+                    }
+                    void Swap( Pool & other )
+                    {
+                        if( & other == this )
+                            return ;
+                        assert(unit_size == other.unit_size );
+                        std::swap( data , other.data);
+                        std::swap( curr_top , other.curr_top );
+                        std::swap( curr_size , other.curr_size);
                     }
                     Unit * Top() const
                     {

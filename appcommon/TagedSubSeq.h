@@ -11,7 +11,7 @@ namespace BGIQD {
             struct SubItem
             {
                 typedef T BaseType;
-                const BaseType & ref ;
+                const BaseType  & ref ;
                 const long long start_pos ;
                 const int length ;
                 SubItem( const BaseType & r , long long s , int l )
@@ -23,9 +23,24 @@ namespace BGIQD {
                 SubItem( const SubItem& o) : SubItem(o.ref,o.start_pos,o.length) {}
             };
 
+        template<class T>
+            struct SubItemC
+            {
+                typedef T BaseType;
+                const BaseType  ref ;
+                const long long start_pos ;
+                const int length ;
+                SubItemC( const BaseType & r , long long s , int l )
+                    : ref(r) 
+                      , start_pos(s)
+                      , length(l)
+                {}
+
+                SubItemC( const SubItemC& o) : SubItemC(o.ref,o.start_pos,o.length) {}
+            };
 
         typedef SubItem<RefChromesome> LongRead;
-        typedef SubItem<LongRead>      InsertFragment;
+        typedef SubItemC<LongRead>       InsertFragment;
 
         struct PE
         {
