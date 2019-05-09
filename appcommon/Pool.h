@@ -19,6 +19,7 @@ namespace BGIQD {
                           , curr_top(0)
                     {
                         data = static_cast<Unit*>( malloc( curr_size * unit_size ) );
+                        memset((void*)data,0,curr_size * unit_size);
                         assert(data);
                     }
 
@@ -32,6 +33,7 @@ namespace BGIQD {
                             return &(data[curr_top++]);
                         curr_size *= 2 ;
                         data =static_cast<Unit*>( realloc(data,curr_size * unit_size) );
+                        memset((void*)(data+(curr_size/2)),0,curr_size/2 * unit_size);
                         assert(data);
                         assert(curr_top < curr_size );
                         return &(data[curr_top++]);
