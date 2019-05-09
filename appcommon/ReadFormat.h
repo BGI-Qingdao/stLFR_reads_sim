@@ -13,14 +13,15 @@ namespace BGIQD {
 
         void FormatPrint(
                 std::ostream & ost
+             ,  long long read_index
              ,  int barcode_id
              ,  int read_id 
              ,  const BGIQD::stLFRSim::InsertFragment & IS 
              ,  const BGIQD::Random::MutationResult & read
              )
         {
-            ost<<"@stlfrsim#barcode_"
-                <<barcode_id
+            ost<<"@stlfrsim_"<<read_index
+                <<"#barcode_"<<barcode_id
                 <<'/'<<read_id
                 <<'\t'<<barcode_id
                 <<'\t'<<IS.ref.ref.fa.head.Id

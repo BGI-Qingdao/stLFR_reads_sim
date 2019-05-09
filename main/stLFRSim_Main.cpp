@@ -147,6 +147,7 @@ struct AppConfig
     void PrintReadsFromBuff() 
     {
         static int barcode_id = 1 ;
+        static long long read_id = 1; 
         while( buffer.Size() > 0)
         {
             auto IF = buffer.Top();
@@ -154,11 +155,12 @@ struct AppConfig
                 ( *IF , read_len,read_len);
             auto r1 = the_mut(basic_pe.read1);
             auto r2 = the_mut(basic_pe.read2);
-            FormatPrint(*or1,barcode_id,1,*IF,r1);
-            FormatPrint(*or2,barcode_id,2,*IF,r2);
+            FormatPrint(*or1,read_id,barcode_id,1,*IF,r1);
+            FormatPrint(*or2,read_id,barcode_id,2,*IF,r2);
             buffer.Pop() ;
         }
         barcode_id ++ ;
+        read_id++ ;
     }
 
     void ClearBuff() 
@@ -274,6 +276,7 @@ int main(int argc , char ** argv  )
         // STEP 4.4 . Output and Log and Clean
         if( j >= pe_num ) // succ
         {
+            R += j ;
             config.PrintReadsFromBuff() ;
             succ ++ ;
         }
