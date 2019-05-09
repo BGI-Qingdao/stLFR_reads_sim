@@ -15,7 +15,7 @@ namespace BGIQD {
                         : unit_size(sizeof(Unit)) 
                           , data(NULL) 
                           , curr_size(1024)
-                          , curr_top(1024)
+                          , curr_top(0)
                     {
                         data = static_cast<Unit*>( malloc( curr_size * unit_size ) );
                         assert(data);

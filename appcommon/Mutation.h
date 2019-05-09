@@ -4,6 +4,7 @@
 #include "biocommon/align_common/align_result.h"
 #include "biocommon/seq/seq.h"
 #include "appcommon/Random.h"
+#include <ctype.h>
 #include <cassert>
 
 namespace BGIQD {
@@ -61,10 +62,10 @@ namespace BGIQD {
                         assert( c == 'A' || c=='a'
                                 || c== 'G' || c=='g'
                                 || c== 'C' || c=='c'
-                                || c== 'T' || c=='T' );
+                                || c== 'T' || c=='t' );
                         if( ! RandomByProbability(mutation_rate) )
                         {
-                            ret_seq.push_back(c);
+                            ret_seq.push_back(toupper(c));
                             add_cigar(BGIQD::ALIGN_COMMON::CIGAR::EQUAL);
                         }
                         else
@@ -82,7 +83,7 @@ namespace BGIQD {
                                 ret_seq.push_back(
                                         RandomInsert());
                                 add_cigar(BGIQD::ALIGN_COMMON::CIGAR::I);
-                                ret_seq.push_back(c);
+                                ret_seq.push_back(toupper(c));
                                 add_cigar(BGIQD::ALIGN_COMMON::CIGAR::EQUAL);
                             }
                             else

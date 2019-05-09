@@ -8,9 +8,9 @@
 namespace BGIQD {
     namespace Random {
 
+         static std::default_random_engine generator;
         char RandomInsert() 
         {
-            std::default_random_engine generator;
             std::uniform_int_distribution<int> distribution(0,3);
             int to_index = distribution(generator);
             const static char table[] = "AGCT";
@@ -19,7 +19,6 @@ namespace BGIQD {
 
         char RandomSubstitute(char x)
         {
-            std::default_random_engine generator;
             std::uniform_int_distribution<int> distribution(0,2);
             int to_index = distribution(generator);
             const static char tableA[] = "GCT";
@@ -49,7 +48,6 @@ namespace BGIQD {
         {
             int accuracy = 1000000 ;
             int hit = prob * accuracy ;
-            std::default_random_engine generator;
             std::uniform_int_distribution<int> distribution(0,accuracy-1);
             return distribution(generator) < hit ;
 
@@ -62,14 +60,12 @@ namespace BGIQD {
             hits.push_back( p1 * accuracy) ;
             hits.push_back( p2 * accuracy) ;
             hits.push_back( p3 * accuracy) ;
-            std::default_random_engine generator;
             return  std::discrete_distribution<int>
                 (hits.begin() ,hits.end())(generator) ;
         }
 
         long long RandomStartPosByLength(long  long len )
         {
-            std::default_random_engine generator;
             std::uniform_int_distribution<long long > distribution(0,len-1);
             return distribution(generator);
         }
@@ -84,7 +80,6 @@ namespace BGIQD {
             };
 
             std::vector<ConfIni> keybin;
-            std::default_random_engine generator;
             std::discrete_distribution<int> distribution;
 
             void InitDistribution()

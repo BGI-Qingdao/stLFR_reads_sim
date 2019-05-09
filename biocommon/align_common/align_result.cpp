@@ -265,7 +265,7 @@ namespace BGIQD {
                 switch(c.type)
                 {
                     case CIGAR::D: ost<<'D'; break ;
-                    case CIGAR::EQUAL: ost<<'X'; break ;
+                    case CIGAR::EQUAL: ost<<'='; break ;
                     case CIGAR::H: ost<<'H'; break ;
                     case CIGAR::I: ost<<'I'; break ;
                     case CIGAR::M: ost<<'M'; break ;

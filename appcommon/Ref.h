@@ -56,7 +56,7 @@ namespace BGIQD {
                     }
                     if( n_before < 0 && is_n )
                         n_before = i ;
-                    else if ( !is_n && n_before > 0 )
+                    else if ( !is_n && n_before >= 0 )
                     {
                         n_area.push_back( 
                                 std::make_tuple( n_before, i)) ;
@@ -64,10 +64,10 @@ namespace BGIQD {
                     }
                     i ++ ;
                 }
-                if ( n_before > 0 )
+                if ( n_before >= 0 )
                 {
                     n_area.push_back( 
-                            std::make_tuple( n_before, i)) ;
+                            std::make_tuple( n_before, i-1)) ;
                 }
             }
             bool IsValidArea( int start , int length ) const
@@ -75,13 +75,13 @@ namespace BGIQD {
                 auto itr = std::lower_bound( n_area.begin() 
                         , n_area.end() 
                         , std::make_tuple( start +length -1, REF_TMP_BIG ) );
-                if( itr != n_area.end() )
-                {
-                    int tmp_start ; int tmp_end ;
-                    std::tie(tmp_start,tmp_end) = *itr ;
-                    if( start <= tmp_end )
-                        return false ;
-                }
+                if( itr == n_area.begin() )
+                    return true ;
+                itr = std::prev(itr);
+                int tmp_start ; int tmp_end ;
+                std::tie(tmp_start,tmp_end) = *itr ;
+                if( start <= tmp_end )
+                    return false ;
                 return true ;
             }
         };
@@ -113,10 +113,11 @@ namespace BGIQD {
                         chromesome_area.begin() 
                         ,chromesome_area.end()
                         ,std::make_tuple(start,REF_TMP_BIG ) );
-                if ( itr == chromesome_area.end() )
+                if ( itr == chromesome_area.begin() )
                 {
                     assert(0);
                 }
+                itr = std::prev(itr);
                 long long tmp_start ; long long tmp_end ;
                 std::tie( tmp_start , tmp_end ) 
                     = *itr ;
@@ -131,8 +132,9 @@ namespace BGIQD {
                         chromesome_area.begin() 
                         ,chromesome_area.end()
                         ,std::make_tuple(start,REF_TMP_BIG ) );
-                if ( itr == chromesome_area.end() )
+                if ( itr == chromesome_area.begin() )
                     return false ;
+             	itr = std::prev(itr) ;   
                 long long tmp_start ; long long tmp_end ;
                 std::tie( tmp_start , tmp_end ) 
                     = *itr ;

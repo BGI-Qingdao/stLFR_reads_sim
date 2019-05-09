@@ -255,7 +255,7 @@ int main(int argc , char ** argv  )
             continue ;
         // STEP 4.3 . Cyclic generate reads until reads enough or too much failure happened.
         int j = 0 ; int k = 0 ;
-        while( j < pe_num || j+k < 2*pe_num )
+        while( j < pe_num && j+k < 2*pe_num )
         {
             int pe_start = BGIQD::Random::
                 RandomStartPosByLength(lr_length);
