@@ -12,6 +12,13 @@
 
 #include <string>
 #include <sstream>
+#include <mutex>
+#include <atomic>
+#include <thread>
+
+typedef BGIQD::stLFRSim::InsertFragment IS ;
+typedef BGIQD::stLFRSim::Pool<IS> ReadPairPool;
+
 struct AppConfig
 {
     std::string lr_length_file;
@@ -33,9 +40,6 @@ struct AppConfig
     std::ostream * or1;
     std::ostream * or2;
 
-    typedef BGIQD::stLFRSim::InsertFragment IS ;
-    typedef BGIQD::stLFRSim::Pool<IS> ReadPairPool;
-    ReadPairPool buffer;
 
     BGIQD::Random::DiscreteRandomWithBin LoadDistributionFromFile( const std::string & file )
     {
@@ -144,8 +148,10 @@ struct AppConfig
     BGIQD::Random::MutationEngine the_mut;
 
 
-    void PrintReadsFromBuff() 
+    void PrintReadsFromBuff(ReadPairPool & buffer)
     {
+        static std::mutex the_mutex;
+        std::lock_guard<std::mutex> l(the_mutex);
         static int barcode_id = 1 ;
         static long long read_id = 1; 
         while( buffer.Size() > 0)
@@ -165,14 +171,11 @@ struct AppConfig
 
     void ClearBuff() 
     {
-        buffer.Clear();
     }
 
     void  AddInsertFragment2Buff( 
             BGIQD::stLFRSim::LongRead & lr , int start , int len ) 
     {
-        IS * next = buffer.Push();
-        new (next) IS(lr,start,len);
     }
 
 }config;
@@ -185,12 +188,12 @@ int main(int argc , char ** argv  )
     //
     ////////////////////////////////////////////////////////
     START_PARSE_ARGS
-    DEFINE_ARG_REQUIRED(std::string , ref
-            , "reference fasta file" );
+        DEFINE_ARG_REQUIRED(std::string , ref
+                , "reference fasta file" );
     DEFINE_ARG_REQUIRED(std::string , o_prefix
             , "output file prefix . print into o_prefix.1.fa.fq && o_prefix.2.fa.fq" );
-        DEFINE_ARG_REQUIRED(std::string , lr_length_distribution 
-                , "distribution file of long read length" );
+    DEFINE_ARG_REQUIRED(std::string , lr_length_distribution 
+            , "distribution file of long read length" );
     DEFINE_ARG_REQUIRED(std::string , pe_num_distribution 
             , "distribution file of number of read-pair in 1 long read" );
     DEFINE_ARG_REQUIRED(std::string , if_lenth_distribution 
@@ -204,8 +207,9 @@ int main(int argc , char ** argv  )
     DEFINE_ARG_OPTIONAL(float , substitute_percent, "substitute percent " , "0.99" );
     DEFINE_ARG_OPTIONAL(float , max_slr_cov, "max single long read cov" , "0.5" );
     DEFINE_ARG_OPTIONAL(int   , read_len ,     "read length" , "100" );
+    DEFINE_ARG_OPTIONAL(int   , thread,     "thread num" , "10" );
     END_PARSE_ARGS ;
-    
+
     config.ref_name = ref.to_string() ;
     config.o_prefix = o_prefix.to_string() ;
     config.lr_length_file = lr_length_distribution.to_string();
@@ -238,53 +242,78 @@ int main(int argc , char ** argv  )
     //
     ////////////////////////////////////////////////////////
 
-    long long succ = 0;
-    long long fail = 0;
-    long long  R = 0 ;
-    while( R <  readpair_num.to_long() )
-    {
-        // STEP 4.1 . Genarating a long read 
-        long long lr_start  =  BGIQD::Random::
-            RandomStartPosByLength(config.RefLen());
-        int  lr_length = config.RandomLRLengthByDistribution() ;
-        if( ! config.ValidLR( lr_start , lr_length ) )
-            continue ;
-        BGIQD::stLFRSim::LongRead lr
-            = config.GetLR( lr_start , lr_length );
-        // STEP 4.2 . Random a read pair number.
-        int pe_num = config.RandomPENumByDistribution() ;
-        if( ! config.ValidPENum( pe_num , lr_length ) )
-            continue ;
-        // STEP 4.3 . Cyclic generate reads until reads enough or too much failure happened.
-        int j = 0 ; int k = 0 ;
-        while( j < pe_num && j+k < 2*pe_num )
+    std::atomic<long long> succ(0) ;
+    std::atomic<long long> fail(0);
+    std::atomic<long long>  R(0) ;
+
+    auto generate = [&] () {
+        while( R <  readpair_num.to_long() )
         {
-            int pe_start = BGIQD::Random::
-                RandomStartPosByLength(lr_length);
-            int pe_length = config.RandomPELengthByDistribution() ;
-            if ( ! config.ValidInsertFragment( lr, pe_start, pe_length ) )
-            {
-                k ++ ;
+            ReadPairPool buffer;
+
+            // STEP 4.1 . Genarating a long read 
+            long long lr_start  =  BGIQD::Random::
+                RandomStartPosByLength(config.RefLen());
+            int  lr_length = config.RandomLRLengthByDistribution() ;
+            if( ! config.ValidLR( lr_start , lr_length ) )
                 continue ;
+            BGIQD::stLFRSim::LongRead lr
+                = config.GetLR( lr_start , lr_length );
+            // STEP 4.2 . Random a read pair number.
+            int pe_num = config.RandomPENumByDistribution() ;
+            if( ! config.ValidPENum( pe_num , lr_length ) )
+                continue ;
+            // STEP 4.3 . Cyclic generate reads until reads enough or too much failure happened.
+            int j = 0 ; int k = 0 ;
+            while( j < pe_num && j+k < 2*pe_num )
+            {
+                int pe_start = BGIQD::Random::
+                    RandomStartPosByLength(lr_length);
+                int pe_length = config.RandomPELengthByDistribution() ;
+                if ( ! config.ValidInsertFragment( lr, pe_start, pe_length ) )
+                {
+                    k ++ ;
+                    continue ;
+                }
+                else
+                {
+                    j++ ;
+                    IS * next = buffer.Push();
+                    new (next) IS(lr,pe_start,pe_length);
+                }
+            }
+            // STEP 4.4 . Output and Log and Clean
+            if( j >= pe_num ) // succ
+            {
+                R += j ;
+                config.PrintReadsFromBuff(buffer) ;
+                succ ++ ;
             }
             else
+                fail ++ ;
+            buffer.Clear();
+        }
+    };
+    std::vector<std::thread> threads ;
+    for( int i = 0 ; i < thread.to_int() ; i ++ )
+    {
+        threads.emplace_back(std::thread(generate));
+    }
+    bool unfinish = true;
+
+    while(!unfinish)
+    {
+        unfinish = false ;
+        for( int i = 0 ; i < thread.to_int() ; i++ )
+        {
+            if( threads[i].joinable() ) 
             {
-                j++ ;
-                config.AddInsertFragment2Buff(lr, pe_start, pe_length );
+                threads[i].join() ;
+                unfinish = true ;
+                break;
             }
         }
-        // STEP 4.4 . Output and Log and Clean
-        if( j >= pe_num ) // succ
-        {
-            R += j ;
-            config.PrintReadsFromBuff() ;
-            succ ++ ;
-        }
-        else
-            fail ++ ;
-        config.ClearBuff();
     }
-
     std::cerr<<" Total succ long read : "<<succ<<'\n';
     std::cerr<<" Total fail long read : "<<fail<<'\n';
     std::cerr<<" Total read pair num  : "<<R<<'\n';
