@@ -4,11 +4,12 @@
 #include <random>
 #include <map>
 #include <cassert>
+#include <chrono>
 
 namespace BGIQD {
     namespace Random {
 
-         static std::default_random_engine generator;
+        static std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
         char RandomInsert() 
         {
             std::uniform_int_distribution<int> distribution(0,3);
