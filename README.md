@@ -53,7 +53,7 @@ And the corresponding distribution looks like :
 ```
 ./bin/stLFRSim args 
                 --ref                           [required]      [ string arg ]  reference fasta file
-                --o_prefix                      [required]      [ string arg ]  output file prefix . print into o_prefix.1.fa.fq && o_prefix.2.fa.fq
+                --o_prefix                      [required]      [ string arg ]  output file prefix . print into o_prefix.1.fq && o_prefix.2.fq
                 --lr_length_distribution        [required]      [ string arg ]  distribution file of long read length
                 --pe_num_distribution           [required]      [ string arg ]  distribution file of number of read-pair in 1 long read
                 --if_lenth_distribution         [required]      [ string arg ]  distribution file of insert fragment length
