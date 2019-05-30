@@ -106,7 +106,7 @@ struct AppConfig
     }
     bool ValidPENum( int pe_num , int lr_length ) const 
     {
-        return float( pe_num * 2 * read_len  ) / float ( lr_length ) > max_slr_cov ;
+        return float( pe_num * 2 * read_len  ) / float ( lr_length ) < max_slr_cov ;
     }
 
 
