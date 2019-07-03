@@ -45,11 +45,19 @@ struct AppConfig
             FATAL(" open distribution file to read failed !!! ");
         auto each_line = [&ret] ( const std::string & line )
         {
+            int step=0;
+            if( line.empty() ) return ;
+            for( char x : line ) if ( x=='\t') step++;
+            if( step != 2 )
+            {
+                std::cerr<<" invalid distribution line : "<<line<<std::endl;
+                std::cerr<<" should be 3 column divided by TAB "<<std::endl;
+                return ;
+            }
             std::istringstream ist(line);
             int s ; int b ; int w ;
             ist >> s>>b>>w;
             ret.keybin.push_back( { s ,b , w } );
-            return ret ;
         };
         BGIQD::FILES::FileReaderFactory::EachLine(*fin,each_line);
         return ret ;
