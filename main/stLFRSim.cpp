@@ -183,6 +183,12 @@ struct AppConfig
         new (next) IS(lr,start,len);
     }
 
+    void Clear()
+    {
+        if( or1 ) { delete or1; or1=NULL; }
+        if( or1 ) { delete or2; or2=NULL; }
+    }
+
 }config;
 
 int main(int argc , char ** argv  )
@@ -292,7 +298,7 @@ int main(int argc , char ** argv  )
             fail ++ ;
         config.ClearBuff();
     }
-
+    config.Clear();
     std::cerr<<" Total succ long read : "<<succ<<'\n';
     std::cerr<<" Total fail long read : "<<fail<<'\n';
     std::cerr<<" Total read pair num  : "<<R<<'\n';
