@@ -186,7 +186,7 @@ struct AppConfig
     void Clear()
     {
         if( or1 ) { delete or1; or1=NULL; }
-        if( or1 ) { delete or2; or2=NULL; }
+        if( or2 ) { delete or2; or2=NULL; }
     }
 
 }config;
