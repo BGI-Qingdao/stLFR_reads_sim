@@ -43,17 +43,13 @@ namespace BGIQD {
                 + IF.ref.start_pos ;
             int r2_start = r1_start + IF.length -r2_len ;
             const std::string & ref = IF.ref.ref.fa.seq.atcgs;
+            ret.read1 =ref.substr(r1_start,r1_len);
+            ret.read2 =BGIQD::SEQ::seqCompleteReverse(
+                    ref.substr(r2_start,r2_len));
+
             if( rand() % 2 == 0 )
             {
-                ret.read1 =ref.substr(r1_start,r1_len);
-                ret.read2 =BGIQD::SEQ::seqCompleteReverse(
-                        ref.substr(r2_start,r2_len));
-            }
-            else
-            {
-                ret.read1 =BGIQD::SEQ::seqCompleteReverse(ref.substr(r1_start,r1_len));
-                ret.read2 =ref.substr(r2_start,r2_len);
-
+                std::swap(ret.read1,ret.read2);
             }
             return ret ;
         }
