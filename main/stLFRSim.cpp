@@ -82,6 +82,7 @@ struct AppConfig
         lr_length_dis.InitDistribution();
         pe_length_dis.InitDistribution();
         pe_num_dis.InitDistribution();
+        lr_num_dis.InitDistribution();
     }
 
     void LoadReference()
