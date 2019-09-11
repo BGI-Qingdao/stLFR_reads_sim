@@ -15,6 +15,7 @@ namespace BGIQD {
                 std::ostream & ost
              ,  long long read_index
              ,  int barcode_id
+             ,  int obarcode_id
              ,  int read_id 
              ,  const BGIQD::stLFRSim::InsertFragment & IS 
              ,  const BGIQD::Random::MutationResult & read
@@ -24,6 +25,7 @@ namespace BGIQD {
                 <<"#barcode_"<<barcode_id
                 <<'/'<<read_id
                 <<'\t'<<barcode_id
+                <<'\t'<<obarcode_id
                 <<'\t'<<IS.ref.ref.fa.head.Id
                 <<'\t'<<IS.ref.ref.length
                 <<'\t'<<IS.ref.start_pos

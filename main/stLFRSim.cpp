@@ -20,6 +20,9 @@ struct AppConfig
     BGIQD::Random::DiscreteRandomWithBin pe_num_dis;
     std::string pe_length_file;
     BGIQD::Random::DiscreteRandomWithBin pe_length_dis;
+    std::string lr_num_file ;
+    BGIQD::Random::DiscreteRandomWithBin lr_num_dis ;
+
 
     BGIQD::stLFRSim::Ref the_ref ;
     std::string ref_name ;
@@ -68,7 +71,14 @@ struct AppConfig
         lr_length_dis = LoadDistributionFromFile(lr_length_file);
         pe_length_dis = LoadDistributionFromFile(pe_length_file);
         pe_num_dis    = LoadDistributionFromFile(pe_num_file);
-
+        if( lr_num_file != "" )
+        {
+            lr_num_dis = LoadDistributionFromFile(lr_num_file);
+        }
+        else
+        {
+            lr_num_dis.keybin.push_back({1,1,1});
+        }
         lr_length_dis.InitDistribution();
         pe_length_dis.InitDistribution();
         pe_num_dis.InitDistribution();
@@ -94,6 +104,11 @@ struct AppConfig
     int RandomLRLengthByDistribution()
     {
         return lr_length_dis();
+    }
+
+    int RandomLRNumByDistribution()
+    {
+        return lr_num_dis();
     }
 
     bool ValidLR(long long start , int length ) const 
@@ -152,7 +167,7 @@ struct AppConfig
     BGIQD::Random::MutationEngine the_mut;
 
 
-    void PrintReadsFromBuff() 
+    void PrintReadsFromBuff( int dbarcode_id ) 
     {
         static int barcode_id = 1 ;
         static long long read_id = 1; 
@@ -163,8 +178,8 @@ struct AppConfig
                 ( *IF , read_len,read_len);
             auto r1 = the_mut(basic_pe.read1);
             auto r2 = the_mut(basic_pe.read2);
-            FormatPrint(*or1,read_id,barcode_id,1,*IF,r1);
-            FormatPrint(*or2,read_id,barcode_id,2,*IF,r2);
+            FormatPrint(*or1,read_id,dbarcode_id, barcode_id,1,*IF,r1);
+            FormatPrint(*or2,read_id,dbarcode_id, barcode_id,2,*IF,r2);
             buffer.Pop() ;
             read_id++ ;
         }
@@ -212,6 +227,8 @@ int main(int argc , char ** argv  )
     DEFINE_ARG_REQUIRED(long long, readpair_num
             , "total number of final generated read-pairs" );
 
+    DEFINE_ARG_OPTIONAL(std::string , lr_num_distribution 
+            , "distribution file of number of long fragment in 1 barcode " , "");
     DEFINE_ARG_OPTIONAL(float , mutation_rate, "mutation rate" , "0.005" );
     DEFINE_ARG_OPTIONAL(float , insert_percent, "insert percent" , "0.005" );
     DEFINE_ARG_OPTIONAL(float , delete_percent, "delete percent " , "0.005" );
@@ -219,10 +236,11 @@ int main(int argc , char ** argv  )
     DEFINE_ARG_OPTIONAL(float , max_slr_cov, "max single long read cov" , "0.5" );
     DEFINE_ARG_OPTIONAL(int   , read_len ,     "read length" , "100" );
     END_PARSE_ARGS ;
-    
+
     config.ref_name = ref.to_string() ;
     config.o_prefix = o_prefix.to_string() ;
     config.lr_length_file = lr_length_distribution.to_string();
+    config.lr_num_file = lr_num_distribution.to_string() ;
     config.pe_num_file = pe_num_distribution.to_string() ;
     config.pe_length_file = if_lenth_distribution.to_string() ;
     config.the_mut.mutation_rate = mutation_rate.to_float();
@@ -255,8 +273,17 @@ int main(int argc , char ** argv  )
     long long succ = 0;
     long long fail = 0;
     long long  R = 0 ;
+    int M = 0 ;
+    int barcode_num = 1 ;
+    int LR_num = config.RandomLRNumByDistribution();
     while( R <  readpair_num.to_long() )
     {
+        if( M >= LR_num )
+        {
+            LR_num = config.RandomLRNumByDistribution();
+            M = 0 ;
+            barcode_num ++ ;
+        }
         // STEP 4.1 . Genarating a long read 
         long long lr_start  =  BGIQD::Random::
             RandomStartPosByLength(config.RefLen());
@@ -291,8 +318,9 @@ int main(int argc , char ** argv  )
         if( j >= pe_num ) // succ
         {
             R += j ;
-            config.PrintReadsFromBuff() ;
+            config.PrintReadsFromBuff(barcode_num) ;
             succ ++ ;
+            M++ ;
         }
         else
             fail ++ ;
