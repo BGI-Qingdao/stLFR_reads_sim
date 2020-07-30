@@ -9,7 +9,9 @@
 namespace BGIQD {
     namespace Random {
 
-        static std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
+        //static std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
+        static std::mt19937_64 generator(std::chrono::system_clock::now().time_since_epoch().count());
+
         char RandomInsert() 
         {
             std::uniform_int_distribution<int> distribution(0,3);
@@ -49,8 +51,9 @@ namespace BGIQD {
         {
             int accuracy = 1000000 ;
             int hit = prob * accuracy ;
-            std::uniform_int_distribution<int> distribution(0,accuracy-1);
-            return distribution(generator) < hit ;
+            return generator() % accuracy < hit ;
+            //std::uniform_int_distribution<int> distribution(0,accuracy-1);
+            //return distribution(generator) < hit ;
 
         }
 
@@ -67,8 +70,9 @@ namespace BGIQD {
 
         long long RandomStartPosByLength(long  long len )
         {
-            std::uniform_int_distribution<long long > distribution(0,len-1);
-            return distribution(generator);
+            return generator() % len ;
+            //std::uniform_int_distribution<long long > distribution(0,len-1);
+            //return distribution(generator);
         }
 
         struct DiscreteRandomWithBin
