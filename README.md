@@ -1,8 +1,8 @@
-# stLFR reads simulator
+# stLFR read simulator
 
 ## Introduction
 
-A easy-to-use and easy-to-analysis simulator for stLFR reads.
+An easy-to-use and easy-to-analysis simulator for stLFR reads.
 
 ## User's Guide
 
