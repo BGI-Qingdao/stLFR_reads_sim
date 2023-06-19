@@ -29,6 +29,7 @@ namespace BGIQD {
 
         struct PE
         {
+            static int extern_len;
             std::string read1;
             std::string read2;
         };

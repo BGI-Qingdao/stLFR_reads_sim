@@ -32,7 +32,7 @@ namespace BGIQD {
             }
 
             MutationResult operator()
-                (const std::string & s) const
+                (const std::string & s, int read_len) const
                 {
                     MutationResult ret ;
                     auto & ret_seq = ret.seq ;
@@ -56,9 +56,11 @@ namespace BGIQD {
                             last_cigar_num = 1;
                         }
                     };
-
-                    for( const auto c : s )
+                    size_t i = 0;
+                    while(ret_seq.size()<read_len && i <s.length())
                     {
+                        char c = s[i];
+                        //for( const auto c : s )
                         assert( c == 'A' || c=='a'
                                 || c== 'G' || c=='g'
                                 || c== 'C' || c=='c'
@@ -91,6 +93,7 @@ namespace BGIQD {
                                 add_cigar(BGIQD::ALIGN_COMMON::CIGAR::D);
                             }
                         }
+                        i = i + 1;
                     }
                     // deal last cigar
                     if( last_cigar_num > 0 )

@@ -12,6 +12,8 @@
 
 #include <string>
 #include <sstream>
+
+int BGIQD::stLFRSim::PE::extern_len = 10;
 struct AppConfig
 {
     std::string lr_length_file;
@@ -176,9 +178,11 @@ struct AppConfig
         {
             auto IF = buffer.Top();
             auto basic_pe = BGIQD::stLFRSim::GetPE
-                ( *IF , read_len,read_len);
-            auto r1 = the_mut(basic_pe.read1);
-            auto r2 = the_mut(basic_pe.read2);
+                ( *IF ,
+                  read_len+BGIQD::stLFRSim::PE::extern_len,
+                  read_len+BGIQD::stLFRSim::PE::extern_len);
+            auto r1 = the_mut(basic_pe.read1,read_len);
+            auto r2 = the_mut(basic_pe.read2,read_len);
             FormatPrint(*or1,read_id,dbarcode_id, barcode_id,1,*IF,r1);
             FormatPrint(*or2,read_id,dbarcode_id, barcode_id,2,*IF,r2);
             buffer.Pop() ;

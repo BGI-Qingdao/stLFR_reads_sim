@@ -17,7 +17,7 @@ namespace BGIQD {
              ,  int barcode_id
              ,  int obarcode_id
              ,  int read_id 
-             ,  const BGIQD::stLFRSim::InsertFragment & IS 
+             ,  const BGIQD::stLFRSim::InsertFragment & IS
              ,  const BGIQD::Random::MutationResult & read
              )
         {
