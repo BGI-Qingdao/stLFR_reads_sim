@@ -82,11 +82,17 @@ namespace BGIQD {
                             }
                             else if ( type == 1 )
                             {// insert
-                                ret_seq.push_back(
-                                        RandomInsert());
-                                add_cigar(BGIQD::ALIGN_COMMON::CIGAR::I);
-                                ret_seq.push_back(toupper(c));
-                                add_cigar(BGIQD::ALIGN_COMMON::CIGAR::EQUAL);
+                                if ( ret_seq.size() +1 == read_len ){
+                                    //we do not want insert at the end of read
+                                    ret_seq.push_back(toupper(c));
+                                    add_cigar(BGIQD::ALIGN_COMMON::CIGAR::EQUAL);
+                                } else {
+                                    ret_seq.push_back(
+                                            RandomInsert());
+                                    add_cigar(BGIQD::ALIGN_COMMON::CIGAR::I);
+                                    ret_seq.push_back(toupper(c));
+                                    add_cigar(BGIQD::ALIGN_COMMON::CIGAR::EQUAL);
+                                }
                             }
                             else
                             {//delete
