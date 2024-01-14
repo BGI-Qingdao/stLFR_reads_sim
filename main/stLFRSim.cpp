@@ -32,7 +32,6 @@ struct AppConfig
     std::string o_prefix;
     float max_slr_cov ;
     int read_len ;
-
     std::string r1_fq ;
     std::string r2_fq ;
     std::ostream * or1;
@@ -281,10 +280,12 @@ int main(int argc , char ** argv  )
     int M = 0 ;
     int barcode_num = 1 ;
     int LR_num = config.RandomLRNumByDistribution();
+    int force_next = 0
     while( R <  readpair_num.to_long() )
     {
-        if( M >= LR_num )
+        if( M >= LR_num || force_next=1 )
         {
+            force_next=0;
             LR_num = config.RandomLRNumByDistribution();
             M = 0 ;
             barcode_num ++ ;
@@ -299,8 +300,10 @@ int main(int argc , char ** argv  )
             = config.GetLR( lr_start , lr_length );
         // STEP 4.2 . Random a read pair number.
         int pe_num = config.RandomPENumByDistribution() ;
-        if( ! config.ValidPENum( pe_num , lr_length ) )
+        if( ! config.ValidPENum( pe_num , lr_length ) ){
+            force_next=1;
             continue ;
+        }
         // STEP 4.3 . Cyclic generate reads until reads enough or too much failure happened.
         int j = 0 ; int k = 0 ;
         while( j < pe_num && j+k < 2*pe_num )

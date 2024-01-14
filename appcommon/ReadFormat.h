@@ -22,7 +22,7 @@ namespace BGIQD {
              )
         {
             ost<<"@stlfrsim_"<<read_index
-                <<"#barcode_"<<barcode_id
+                <<"#100_200_"<<barcode_id
                 <<'/'<<read_id
                 <<'\t'<<barcode_id
                 <<'\t'<<obarcode_id
