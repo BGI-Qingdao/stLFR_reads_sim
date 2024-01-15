@@ -280,10 +280,10 @@ int main(int argc , char ** argv  )
     int M = 0 ;
     int barcode_num = 1 ;
     int LR_num = config.RandomLRNumByDistribution();
-    int force_next = 0
+    int force_next = 0;
     while( R <  readpair_num.to_long() )
     {
-        if( M >= LR_num || force_next=1 )
+        if( M >= LR_num || force_next==1 )
         {
             force_next=0;
             LR_num = config.RandomLRNumByDistribution();
