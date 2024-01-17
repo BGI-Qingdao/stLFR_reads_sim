@@ -21,8 +21,11 @@ namespace BGIQD {
              ,  const BGIQD::Random::MutationResult & read
              )
         {
+            int a = int(barcode_id/1000000)+1;
+            int b = int(int(barcode_id%1000000)/1000)+1;
+            int c = int(barcode_id%1000)+1;
             ost<<"@stlfrsim_"<<read_index
-                <<"#100_200_"<<barcode_id
+                <<"#"<<a<<'_'<<b<<'_'<<c
                 <<'/'<<read_id
                 <<'\t'<<barcode_id
                 <<'\t'<<obarcode_id
