@@ -32,6 +32,7 @@ struct AppConfig
     std::string o_prefix;
     float max_slr_cov ;
     int read_len ;
+    int single_end;
     std::string r1_fq ;
     std::string r2_fq ;
     std::ostream * or1;
@@ -113,25 +114,28 @@ struct AppConfig
         return lr_num_dis();
     }
 
-    bool ValidLR(long long start , int length ) const 
+    bool ValidLR(long long start , int length ) const
     {
         return the_ref.IsValidArea(start, length );
     }
 
-    BGIQD::stLFRSim::LongRead  GetLR(long long start , int length ) const 
+    BGIQD::stLFRSim::LongRead  GetLR(long long start , int length ) const
     {
         long long chromesome_start ;
         const auto & chromesome = the_ref.GetChromesome(start, chromesome_start );
         return BGIQD::stLFRSim::LongRead(chromesome ,start-chromesome_start , length );
     }
 
-    int RandomPENumByDistribution() 
+    int RandomPENumByDistribution()
     {
         return pe_num_dis();
     }
-    bool ValidPENum( int pe_num , int lr_length ) const 
+    bool ValidPENum( int pe_num , int lr_length ) const
     {
-        return float( pe_num * 2 * read_len  ) / float ( lr_length ) < max_slr_cov ;
+        if( single_end == 0)
+            return float( pe_num * 2 * read_len  ) / float ( lr_length ) < max_slr_cov ;
+        else
+            return float( pe_num * read_len  ) / float ( lr_length ) < max_slr_cov ;
     }
 
 
@@ -141,7 +145,7 @@ struct AppConfig
     }
 
     bool ValidInsertFragment( BGIQD::stLFRSim::LongRead & lr ,
-            int start , int len ) const 
+            int start , int len ) const
     {
         return lr.ref.IsValidArea(start+lr.start_pos,len)
             && start + len < lr.length ;
@@ -153,15 +157,18 @@ struct AppConfig
         r2_fq = o_prefix+"2.fq";
         or1 = BGIQD::FILES::FileWriterFactory
             ::GenerateWriterFromFileName(r1_fq);
-        or2 = BGIQD::FILES::FileWriterFactory
-            ::GenerateWriterFromFileName(r2_fq);
         if( NULL ==  or1 )
             FATAL("failed to open o_prefix.1.fq to write !!!");
-        if( NULL == or2 )
-            FATAL("failed to open o_prefix.2.fq to write !!!");
+        if (single_end == 0)
+        {
+            or2 = BGIQD::FILES::FileWriterFactory
+                ::GenerateWriterFromFileName(r2_fq);
+            if( NULL == or2 )
+                FATAL("failed to open o_prefix.2.fq to write !!!");
+        }
     }
 
-    long long RefLen() const 
+    long long RefLen() const
     {
         return the_ref.length ;
     }
@@ -169,10 +176,10 @@ struct AppConfig
     BGIQD::Random::MutationEngine the_mut;
 
 
-    void PrintReadsFromBuff( int dbarcode_id ) 
+    void PrintReadsFromBuff( int dbarcode_id )
     {
         static int barcode_id = 1 ;
-        static long long read_id = 1; 
+        static long long read_id = 1;
         while( buffer.Size() > 0)
         {
             auto IF = buffer.Top();
@@ -181,22 +188,25 @@ struct AppConfig
                   read_len+BGIQD::stLFRSim::PE::extern_len,
                   read_len+BGIQD::stLFRSim::PE::extern_len);
             auto r1 = the_mut(basic_pe.read1,read_len);
-            auto r2 = the_mut(basic_pe.read2,read_len);
             FormatPrint(*or1,read_id,dbarcode_id, barcode_id,1,*IF,r1);
-            FormatPrint(*or2,read_id,dbarcode_id, barcode_id,2,*IF,r2);
+            if (single_end == 0 )
+            {
+                auto r2 = the_mut(basic_pe.read2,read_len);
+                FormatPrint(*or2,read_id,dbarcode_id, barcode_id,2,*IF,r2);
+            }
             buffer.Pop() ;
             read_id++ ;
         }
         barcode_id ++ ;
     }
 
-    void ClearBuff() 
+    void ClearBuff()
     {
         buffer.Clear();
     }
 
-    void  AddInsertFragment2Buff( 
-            BGIQD::stLFRSim::LongRead & lr , int start , int len ) 
+    void  AddInsertFragment2Buff(
+            BGIQD::stLFRSim::LongRead & lr , int start , int len )
     {
         IS * next = buffer.Push();
         new (next) IS(lr,start,len);
@@ -222,16 +232,16 @@ int main(int argc , char ** argv  )
             , "reference fasta file" );
     DEFINE_ARG_REQUIRED(std::string , o_prefix
             , "output file prefix . print into o_prefix.1.fq && o_prefix.2.fq" );
-        DEFINE_ARG_REQUIRED(std::string , lr_length_distribution 
+        DEFINE_ARG_REQUIRED(std::string , lr_length_distribution
                 , "distribution file of long read length" );
-    DEFINE_ARG_REQUIRED(std::string , pe_num_distribution 
+    DEFINE_ARG_REQUIRED(std::string , pe_num_distribution
             , "distribution file of number of read-pair in 1 long read" );
-    DEFINE_ARG_REQUIRED(std::string , if_lenth_distribution 
+    DEFINE_ARG_REQUIRED(std::string , if_lenth_distribution
             , "distribution file of insert fragment length" );
     DEFINE_ARG_REQUIRED(long long, readpair_num
             , "total number of final generated read-pairs" );
 
-    DEFINE_ARG_OPTIONAL(std::string , lr_num_distribution 
+    DEFINE_ARG_OPTIONAL(std::string , lr_num_distribution
             , "distribution file of number of long fragment in 1 barcode " , "");
     DEFINE_ARG_OPTIONAL(float , mutation_rate, "mutation rate" , "0.005" );
     DEFINE_ARG_OPTIONAL(float , insert_percent, "insert percent" , "0.005" );
@@ -239,6 +249,7 @@ int main(int argc , char ** argv  )
     DEFINE_ARG_OPTIONAL(float , substitute_percent, "substitute percent " , "0.99" );
     DEFINE_ARG_OPTIONAL(float , max_slr_cov, "max single long read cov" , "0.5" );
     DEFINE_ARG_OPTIONAL(int   , read_len ,     "read length" , "100" );
+    DEFINE_ARG_OPTIONAL(int   , single_end,     "single end mode[0/1]" , "0" );
     END_PARSE_ARGS ;
 
     config.ref_name = ref.to_string() ;
@@ -253,6 +264,7 @@ int main(int argc , char ** argv  )
     config.the_mut.substitute_percent = substitute_percent.to_float() ;
     config.read_len = read_len.to_int() ;
     config.max_slr_cov = max_slr_cov.to_float() ;
+    config.single_end = single_end.to_int();
     config.Init();
 
     ////////////////////////////////////////////////////////
@@ -290,7 +302,7 @@ int main(int argc , char ** argv  )
             M = 0 ;
             barcode_num ++ ;
         }
-        // STEP 4.1 . Genarating a long read 
+        // STEP 4.1 . Genarating a long read
         long long lr_start  =  BGIQD::Random::
             RandomStartPosByLength(config.RefLen());
         int  lr_length = config.RandomLRLengthByDistribution() ;
